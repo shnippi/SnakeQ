@@ -10,6 +10,9 @@ MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
 LR = 0.001
 
+# how big one block is in pixels
+BLOCK_SIZE = 20
+
 
 class Agent:
 
@@ -79,12 +82,19 @@ class Agent:
 
         ]
 
+        board = np.zeros((24,32))
+        for point in snake:
+            board[int((point.y - BLOCK_SIZE)//BLOCK_SIZE)][int((point.x - BLOCK_SIZE)//20)] = 1
+
+        # print(board)
+        # print(np.where(board == 1))
+
+
         # track position of #self.extension bodyparts relative to head
         for idx in range (-3, 3):
             if idx == 0:
                 continue
             state.extend([snake[idx].x < game.head.x,snake[idx].x > game.head.x, snake[idx].y < game.head.y, snake[idx].y > game.head.y, ])
-
 
         return np.array(state, dtype=int)
 
