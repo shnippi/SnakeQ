@@ -29,7 +29,7 @@ BLACK = (0, 0, 0)
 # how big one block is in pixels
 BLOCK_SIZE = 20
 # speeeed
-SPEED = 100
+SPEED = 1000
 
 
 class SnakeGameAI:
@@ -160,7 +160,7 @@ if __name__ == '__main__':
     game = SnakeGameAI()
 
     # game loop
-    while True:
+    while True:  # el classico
         game_over, score = game.play_step()
 
         if game_over == True:

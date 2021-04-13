@@ -133,7 +133,6 @@ def train():
             game.reset()
             agent.n_games += 1
             agent.train_long_memory()
-            break
 
             if score > record:
                 record = score

@@ -49,13 +49,6 @@ class QTrainer:
             reward = torch.unsqueeze(reward, 0)
             done = (done,)
 
-        if done[-1]:
-            print(state)
-            print(action)
-            print(reward)
-            print(next_state)
-            print(done)
-
         # 1: predicted Q values with current state, --> " old Q "
         pred = self.model(state)
 
@@ -67,8 +60,6 @@ class QTrainer:
 
             target[idx][torch.argmax(action[idx]).item()] = Q_new
 
-        print(pred)
-        print(target)
         # 2: Q_new = r + y * max(next_predicted Q value) -> only do this if done == False
         # pred.clone()
         # preds[argmax(action)] = Q_new
