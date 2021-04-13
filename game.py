@@ -29,7 +29,7 @@ BLACK = (0, 0, 0)
 # how big one block is in pixels
 BLOCK_SIZE = 20
 # speeeed
-SPEED = 1000
+SPEED = 10000
 
 
 class SnakeGameAI:

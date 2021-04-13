@@ -17,12 +17,18 @@ class Agent:
         self.n_games = 0
         self.epsilon = 0  # randomness
         self.gamma = 0.9  # discount rate
+        self.extensions = 20  # how many points (body squares) do i wanna track
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
-        self.model = Linear_QNet(11, 256, 3)  # 11 value state input, 3 possible action as output (s,l, r)
+        self.model = Linear_QNet(11 + self.extensions, 256, 3)  # 11 value state input, 3 action as output (s,l, r)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self, game):
+
+        # TODO: fix state so it doesnt trap itself
+
         head = game.snake[0]
+        tail = game.snake[-1]
+        snake = game.snake
         point_l = Point(head.x - 20, head.y)
         point_r = Point(head.x + 20, head.y)
         point_u = Point(head.x, head.y - 20)
@@ -35,6 +41,11 @@ class Agent:
 
         # 11 value state : [danger straight, danger right, danger left, direction left, direction right,
         # direction up, direction down, food left, food right, food up, food down] --> 0/1 for T/F
+        # TODO: cuda
+        # TODO: idea 1 : track tail
+        # TODO: idea 2 : track average location of body
+        # TODO: idea 3 : penalty for time? penalty for loop?
+        # TODO: idea 4 : give whole board as input
         state = [
             # Danger straight
             (dir_r and game.is_collision(point_r)) or
@@ -64,8 +75,16 @@ class Agent:
             game.food.x < game.head.x,  # food left
             game.food.x > game.head.x,  # food right
             game.food.y < game.head.y,  # food up
-            game.food.y > game.head.y  # food down
+            game.food.y > game.head.y,  # food down
+
         ]
+
+        # track position of #self.extension bodyparts relative to head
+        for idx in range (-3, 3):
+            if idx == 0:
+                continue
+            state.extend([snake[idx].x < game.head.x,snake[idx].x > game.head.x, snake[idx].y < game.head.y, snake[idx].y > game.head.y, ])
+
 
         return np.array(state, dtype=int)
 
@@ -144,7 +163,7 @@ def train():
             total_score += score
             mean_score = total_score / agent.n_games
             plot_mean_scores.append(mean_score)
-            plot(plot_scores, plot_mean_scores)
+            plot(plot_scores, plot_mean_scores, agent.n_games)
 
 
 if __name__ == '__main__':
