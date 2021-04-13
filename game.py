@@ -26,7 +26,7 @@ BLUE1 = (0, 0, 255)
 BLUE2 = (0, 100, 255)
 BLACK = (0, 0, 0)
 
-#how big one block is in pixels
+# how big one block is in pixels
 BLOCK_SIZE = 20
 SPEED = 20
 
@@ -42,12 +42,12 @@ class SnakeGameAI:
         self.clock = pygame.time.Clock()
         self.reset()
 
-
     def reset(self):
         # init game state
         self.direction = Direction.RIGHT
 
         self.head = Point(self.w / 2, self.h / 2)
+        # start with length 3 snake
         self.snake = [self.head,
                       Point(self.head.x - BLOCK_SIZE, self.head.y),
                       Point(self.head.x - (2 * BLOCK_SIZE), self.head.y)]
@@ -65,7 +65,7 @@ class SnakeGameAI:
             self._place_food()
 
     def play_step(self, action):
-        self.frame_iteration +=1
+        self.frame_iteration += 1
         # 1. collect user input
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -79,7 +79,7 @@ class SnakeGameAI:
         # 3. check if game over
         reward = 0
         game_over = False
-        if self.is_collision() or self.frame_iteration > 100*len(self.snake):
+        if self.is_collision() or self.frame_iteration > 100 * len(self.snake):
             game_over = True
             reward = -10
             return reward, game_over, self.score
@@ -98,7 +98,7 @@ class SnakeGameAI:
         # 6. return game over and score
         return reward, game_over, self.score
 
-    def is_collision(self, pt = None):
+    def is_collision(self, pt=None):
         if pt is None:
             pt = self.head
         # hits boundary
@@ -125,21 +125,22 @@ class SnakeGameAI:
 
     def _move(self, action):
         # [straight,right,left] seen from the snake POV
-        clock_wise = [Direction.RIGHT,Direction.DOWN, Direction.LEFT, Direction.UP]
+        clock_wise = [Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP]
         idx = clock_wise.index(self.direction)
 
-        if np.array_equal(action,[1,0,0]):
-            new_dir = clock_wise[idx] # straight
-        elif np.array_equal(action,[0,1,0]):
+        #  translating from snake POV in absolute directions seen from the board
+        if np.array_equal(action, [1, 0, 0]):
+            new_dir = clock_wise[idx]  # straight
+        elif np.array_equal(action, [0, 1, 0]):
             next_idx = (idx + 1) % 4
-            new_dir = clock_wise[next_idx] #right
+            new_dir = clock_wise[next_idx]  # right ( move clockwise )
         else:
             next_idx = (idx - 1) % 4
-            new_dir = clock_wise[next_idx]  # right
+            new_dir = clock_wise[next_idx]  # left (move counterclockwise)
 
         self.direction = new_dir
 
-
+        # update head
         x = self.head.x
         y = self.head.y
         if self.direction == Direction.RIGHT:
