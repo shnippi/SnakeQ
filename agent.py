@@ -20,9 +20,9 @@ class Agent:
         self.n_games = 0
         self.epsilon = 0  # randomness
         self.gamma = 0.9  # discount rate
-        self.extensions = 20  # how many points (body squares) do i wanna track
+        self.extensions = 0  # how many points (body squares) do i wanna track
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
-        self.model = Linear_QNet(11, 256, 3)  # 11 value state input, 3 action as output (s,l, r)
+        self.model = Linear_QNet(11 + self.extensions, 256, 3)  # 11 value state input, 3 action as output (s,l, r)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self, game):
@@ -84,7 +84,7 @@ class Agent:
 
         ]
 
-        # track position of #self.extension bodyparts relative to head
+        # # track position of #self.extension bodyparts relative to head
         # for idx in range(-3, 3):
         #     if idx == 0:
         #         continue

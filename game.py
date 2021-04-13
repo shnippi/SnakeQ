@@ -28,13 +28,13 @@ BLACK = (0, 0, 0)
 
 # how big one block is in pixels
 BLOCK_SIZE = 20
-# speeeed
-SPEED = 10000
+# speeeed go brr
+SPEED = 1000
 
 
 class SnakeGameAI:
 
-    def __init__(self, w=640, h=480): # 32 x 24
+    def __init__(self, w=640, h=480):  # 32 x 24
         self.w = w
         self.h = h
         # init display
@@ -99,20 +99,23 @@ class SnakeGameAI:
         left = False
         right = False
         for point in self.snake[1:]:
-            if point.x > self.head.x:
+            if point.x - self.head.x < 3*BLOCK_SIZE:
                 right = True
 
-            elif point.x < self.head.x:
+            elif self.head.x - point.x < 3*BLOCK_SIZE:
                 left = True
 
-            elif point.y < self.head.y:
-                down = True
-            elif point.y > self.head.y:
+            elif point.y - self.head.y < 3*BLOCK_SIZE:
                 up = True
+            elif self.head.y - point.y < 3*BLOCK_SIZE:
+                down = True
 
         if up and down and left and right:
-            reward = -5
+            reward = -10
 
+        # check if adjacent, punish loops
+        if self.is_adjacent(self.head):
+            reward = -2
 
         # 5. update ui and clock
         self._update_ui()
@@ -128,6 +131,19 @@ class SnakeGameAI:
             return True
         # hits itself
         if pt in self.snake[1:]:
+            return True
+
+        return False
+
+    def is_adjacent(self, pt):
+        point_l = Point(pt.x - 20, pt.y)
+        point_r = Point(pt.x + 20, pt.y)
+        point_u = Point(pt.x, pt.y - 20)
+        point_d = Point(pt.x, pt.y + 20)
+
+        # ignore head and first tile since theyre always adjacent
+        if point_l in self.snake[2:] or point_r in self.snake[2:] or point_u in self.snake[2:] or point_d in self.snake[
+                                                                                                             2:]:
             return True
 
         return False
