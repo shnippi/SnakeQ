@@ -72,6 +72,7 @@ class Agent:
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))  # popleft if MAX_MEMORY is reached
 
+    # after every episode
     def train_long_memory(self):
         if len(self.memory) > BATCH_SIZE:
             mini_sample = random.sample(self.memory, BATCH_SIZE)  # list of tuples
@@ -81,6 +82,7 @@ class Agent:
         states, actions, rewards, next_states, dones = zip(*mini_sample)
         self.trainer.train_step(states, actions, rewards, next_states, dones)
 
+    # after every action
     def train_short_memory(self, state, action, reward, next_state, done):
         self.trainer.train_step(state, action, reward, next_state, done)
 
@@ -111,7 +113,7 @@ def train():
         # get old state
         state_old = agent.get_state(game)
 
-        # get move
+        # get move prediction
         final_move = agent.get_action(state_old)
 
         # perform move and get new state
@@ -124,6 +126,7 @@ def train():
         # remember
         agent.remember(state_old, final_move, reward, state_new, done)
 
+        # after every epoch
         if done:
             # train long memory, plot result
             game.reset()
