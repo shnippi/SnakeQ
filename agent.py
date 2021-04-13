@@ -18,7 +18,7 @@ class Agent:
         self.epsilon = 0  # randomness
         self.gamma = 0.9  # discount rate
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
-        self.model = Linear_QNet(11, 256, 3)
+        self.model = Linear_QNet(11, 256, 3)  # 11 value state input, 3 possible action as output (s,l, r)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self, game):
@@ -33,6 +33,8 @@ class Agent:
         dir_u = game.direction == Direction.UP
         dir_d = game.direction == Direction.DOWN
 
+        # 11 value state : [danger straight, danger right, danger left, direction left, direction right,
+        # direction up, direction down, food left, food right, food up, food down] --> 0/1 for T/F
         state = [
             # Danger straight
             (dir_r and game.is_collision(point_r)) or
@@ -78,14 +80,12 @@ class Agent:
 
         states, actions, rewards, next_states, dones = zip(*mini_sample)
         self.trainer.train_step(states, actions, rewards, next_states, dones)
-        # for state, action, reward, nexrt_state, done in mini_sample:
-        #    self.trainer.train_step(state, action, reward, next_state, done)
 
     def train_short_memory(self, state, action, reward, next_state, done):
         self.trainer.train_step(state, action, reward, next_state, done)
 
     def get_action(self, state):
-        # random moves: tradeoff exploration / exploitation
+        # random moves: tradeoff exploration / exploitation, shrinking epsilon
         self.epsilon = 80 - self.n_games
         final_move = [0, 0, 0]
         if random.randint(0, 200) < self.epsilon:
@@ -107,7 +107,7 @@ def train():
     record = 0
     agent = Agent()
     game = SnakeGameAI()
-    while True:
+    while True:  # the good old while true
         # get old state
         state_old = agent.get_state(game)
 
