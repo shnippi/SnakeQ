@@ -120,10 +120,11 @@ def train():
         reward, done, score = game.play_step(final_move)
         state_new = agent.get_state(game)
 
-        # train short memory
+        # train short memory with the information we just got by playing A in state S and getting reward R and ending
+        # up in S' (new state)
         agent.train_short_memory(state_old, final_move, reward, state_new, done)
 
-        # remember
+        # remember for after epoch learning
         agent.remember(state_old, final_move, reward, state_new, done)
 
         # after every epoch
@@ -132,6 +133,7 @@ def train():
             game.reset()
             agent.n_games += 1
             agent.train_long_memory()
+            break
 
             if score > record:
                 record = score

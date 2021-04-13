@@ -38,9 +38,10 @@ class QTrainer:
         next_state = torch.tensor(next_state, dtype=torch.float)
         action = torch.tensor(action, dtype=torch.long)
         reward = torch.tensor(reward, dtype=torch.float)
-        # (n, x)
 
-        if len(state.shape) == 1: # if its not already in (n,x) form
+        # (n, x) add a dimension for batch, since shortterm_memory only takes 1 sample and longterm_memory takes
+        # whole batch, so we have to generalize it here
+        if len(state.shape) == 1:  # if its not already in (n,x) form
             # (1, x) --> put the batchnumber up front
             state = torch.unsqueeze(state, 0)
             next_state = torch.unsqueeze(next_state, 0)
@@ -48,18 +49,27 @@ class QTrainer:
             reward = torch.unsqueeze(reward, 0)
             done = (done,)
 
+        if done[-1]:
+            print(state)
+            print(action)
+            print(reward)
+            print(next_state)
+            print(done)
+
         # 1: predicted Q values with current state, --> " old Q "
         pred = self.model(state)
 
         target = pred.clone()
-        for idx in range(len(done)):
+        for idx in range(len(done)):  # if not a batch, only 1 index (0), ignore idx for short term memory
             Q_new = reward[idx]
             if not done[idx]:
-                Q_new = reward[idx] + self.gamma * torch.max(self.model(next_state[idx]))
+                Q_new = reward[idx] + self.gamma * torch.max(self.model(next_state[idx]))  # bellman equation
 
             target[idx][torch.argmax(action[idx]).item()] = Q_new
 
-        # 2: Q_new = r + y * max(next_predicted Q value) -> only do this if not done
+        print(pred)
+        print(target)
+        # 2: Q_new = r + y * max(next_predicted Q value) -> only do this if done == False
         # pred.clone()
         # preds[argmax(action)] = Q_new
         self.optimizer.zero_grad()
