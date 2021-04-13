@@ -22,7 +22,7 @@ class Agent:
         self.gamma = 0.9  # discount rate
         self.extensions = 20  # how many points (body squares) do i wanna track
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
-        self.model = Linear_QNet(11 + self.extensions, 256, 3)  # 11 value state input, 3 action as output (s,l, r)
+        self.model = Linear_QNet(11, 256, 3)  # 11 value state input, 3 action as output (s,l, r)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self, game):
@@ -49,6 +49,8 @@ class Agent:
         # TODO: idea 2 : track average location of body
         # TODO: idea 3 : penalty for time? penalty for loop?
         # TODO: idea 4 : give whole board as input
+        # TODO: idea 5 : -1 reward if head is "inside of snake"
+
         state = [
             # Danger straight
             (dir_r and game.is_collision(point_r)) or
@@ -82,21 +84,24 @@ class Agent:
 
         ]
 
-        board = np.zeros((24,32))
-        for point in snake:
-            board[int((point.y - BLOCK_SIZE)//BLOCK_SIZE)][int((point.x - BLOCK_SIZE)//20)] = 1
+        # track position of #self.extension bodyparts relative to head
+        # for idx in range(-3, 3):
+        #     if idx == 0:
+        #         continue
+        #     state.extend([snake[idx].x < game.head.x, snake[idx].x > game.head.x, snake[idx].y < game.head.y,
+        #                   snake[idx].y > game.head.y, ])
+
+
+        # # board idea
+        # board = np.zeros((24, 32))
+        # for point in snake:
+        #     board[int((point.y - BLOCK_SIZE) // BLOCK_SIZE)][int((point.x - BLOCK_SIZE) // 20)] = 1
 
         # print(board)
         # print(np.where(board == 1))
 
-
-        # track position of #self.extension bodyparts relative to head
-        for idx in range (-3, 3):
-            if idx == 0:
-                continue
-            state.extend([snake[idx].x < game.head.x,snake[idx].x > game.head.x, snake[idx].y < game.head.y, snake[idx].y > game.head.y, ])
-
         return np.array(state, dtype=int)
+        # return np.append(np.array(state, dtype=int), np.array(board.flatten(), dtype=int))
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))  # popleft if MAX_MEMORY is reached

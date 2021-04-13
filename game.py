@@ -93,6 +93,27 @@ class SnakeGameAI:
         else:
             self.snake.pop()
 
+        # check if snake is in itself
+        up = False
+        down = False
+        left = False
+        right = False
+        for point in self.snake[1:]:
+            if point.x > self.head.x:
+                right = True
+
+            elif point.x < self.head.x:
+                left = True
+
+            elif point.y < self.head.y:
+                down = True
+            elif point.y > self.head.y:
+                up = True
+
+        if up and down and left and right:
+            reward = -5
+
+
         # 5. update ui and clock
         self._update_ui()
         self.clock.tick(SPEED)
