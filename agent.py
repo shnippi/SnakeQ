@@ -20,7 +20,7 @@ class Agent:
         self.n_games = 0
         self.epsilon = 0  # randomness
         self.gamma = 0.9  # discount rate
-        self.extensions = 0  # how many points (body squares) do i wanna track
+        self.extensions = 3  # how many points (body squares) do i wanna track
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
         self.model = Linear_QNet(11 + self.extensions, 256, 3)  # 11 value state input, 3 action as output (s,l, r)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
@@ -37,6 +37,11 @@ class Agent:
         point_u = Point(head.x, head.y - 20)
         point_d = Point(head.x, head.y + 20)
 
+        point_2l = Point(head.x - 40, head.y)
+        point_2r = Point(head.x + 40, head.y)
+        point_2u = Point(head.x, head.y - 40)
+        point_2d = Point(head.x, head.y + 40)
+
         dir_l = game.direction == Direction.LEFT
         dir_r = game.direction == Direction.RIGHT
         dir_u = game.direction == Direction.UP
@@ -48,8 +53,10 @@ class Agent:
         # TODO: idea 1 : track tail
         # TODO: idea 2 : track average location of body
         # TODO: idea 3 : penalty for time? penalty for loop?
-        # TODO: idea 4 : give whole board as input
-        # TODO: idea 5 : -1 reward if head is "inside of snake"
+        # TODO: idea 4 : give whole board as input  xxxx
+        # TODO: idea 5 : -1 reward if head is "inside of snake"  xxxx
+        # TODO: idea 6 : give 2 vision squares
+
 
         state = [
             # Danger straight
@@ -65,10 +72,28 @@ class Agent:
             (dir_r and game.is_collision(point_d)),
 
             # Danger left
-            (dir_d and game.is_collision(point_r)) or
-            (dir_u and game.is_collision(point_l)) or
-            (dir_r and game.is_collision(point_u)) or
-            (dir_l and game.is_collision(point_d)),
+            (dir_d and game.is_collision(point_2r)) or
+            (dir_u and game.is_collision(point_2l)) or
+            (dir_r and game.is_collision(point_2u)) or
+            (dir_l and game.is_collision(point_2d)),
+
+            # Danger 2straight
+            (dir_r and game.is_collision(point_2r)) or
+            (dir_l and game.is_collision(point_2l)) or
+            (dir_u and game.is_collision(point_2u)) or
+            (dir_d and game.is_collision(point_2d)),
+
+            # Danger 2right
+            (dir_u and game.is_collision(point_2r)) or
+            (dir_d and game.is_collision(point_2l)) or
+            (dir_l and game.is_collision(point_2u)) or
+            (dir_r and game.is_collision(point_2d)),
+
+            # Danger 2left
+            (dir_d and game.is_collision(point_2r)) or
+            (dir_u and game.is_collision(point_2l)) or
+            (dir_r and game.is_collision(point_2u)) or
+            (dir_l and game.is_collision(point_2d)),
 
             # Move direction
             dir_l,

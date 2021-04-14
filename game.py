@@ -93,33 +93,43 @@ class SnakeGameAI:
         else:
             self.snake.pop()
 
-        # check if snake is in itself
+        # check if snake is in itself, PYGAME 0,0 IN TOP LEFT CORNER and Y INCREASE FROM TOP TO BOTTOM!!!!
         up = False
         down = False
         left = False
         right = False
         for point in self.snake[1:]:
-            if point.x - self.head.x < 3*BLOCK_SIZE:
+            if point.x > self.head.x : #and point.x - self.head.x < 3*BLOCK_SIZE:
                 right = True
 
-            elif self.head.x - point.x < 3*BLOCK_SIZE:
+            if point.x < self.head.x : # and self.head.x - point.x < 3*BLOCK_SIZE:
                 left = True
 
-            elif point.y - self.head.y < 3*BLOCK_SIZE:
-                up = True
-            elif self.head.y - point.y < 3*BLOCK_SIZE:
+            if point.y > self.head.y:# and point.y - self.head.y < 3*BLOCK_SIZE:
                 down = True
+            if point.y < self.head.y:# and self.head.y - point.y < 3*BLOCK_SIZE:
+                up = True
 
+        #
+        # print(self.snake[1:])
+        # print(self.head.x, self.head.y)
+        # print(self.snake[-1].x, self.snake[-1].y)
+        # print(up,down,left,right)
         if up and down and left and right:
-            reward = -10
+            reward = -5
 
         # check if adjacent, punish loops
         if self.is_adjacent(self.head):
             reward = -2
 
+        # check if path to food is not free
+
         # 5. update ui and clock
         self._update_ui()
-        self.clock.tick(SPEED)
+        if self.score > 10:
+            self.clock.tick(int(SPEED/1))
+        else:
+            self.clock.tick(SPEED)
         # 6. return game over and score
         return reward, game_over, self.score
 
