@@ -40,7 +40,7 @@ class QTrainer:
         reward = torch.tensor(reward, dtype=torch.float)
 
         # (n, x) add a dimension for batch, since shortterm_memory only takes 1 sample and longterm_memory takes
-        # whole batch, so we have to generalize it here
+        # whole batch of samples, so we have to generalize it here
         if len(state.shape) == 1:  # if its not already in (n,x) form
             # (1, x) --> put the batchnumber up front
             state = torch.unsqueeze(state, 0)
@@ -49,7 +49,7 @@ class QTrainer:
             reward = torch.unsqueeze(reward, 0)
             done = (done,)
 
-        # 1: predicted Q values with current state, --> " old Q "
+        # 1: predicted Q values with current state, --> " old Q ", 1 Q-VALUE FOR EVERY ACTION
         pred = self.model(state)
 
         target = pred.clone()
