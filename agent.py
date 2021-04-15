@@ -56,7 +56,9 @@ class Agent:
         # TODO: idea 4 : give whole board as input  xxxx
         # TODO: idea 5 : -1 reward if head is "inside of snake"  xxxx
         # TODO: idea 6 : give 2 vision squares
-
+        # TODO: idea 7 : give reward when he is in a position where nothing is in the way for 2 tiles (free square in front)
+        # TODO: check if path to food is not free
+        # TODO: idea 7 : punish when it has to reset (maybe prevent idle animations)
 
         state = [
             # Danger straight
@@ -115,7 +117,6 @@ class Agent:
         #         continue
         #     state.extend([snake[idx].x < game.head.x, snake[idx].x > game.head.x, snake[idx].y < game.head.y,
         #                   snake[idx].y > game.head.y, ])
-
 
         # # board idea
         # board = np.zeros((24, 32))

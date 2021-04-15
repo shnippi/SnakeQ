@@ -93,45 +93,52 @@ class SnakeGameAI:
         else:
             self.snake.pop()
 
+        # # check if in cage
+        # if self.cage_check():
+        #     reward = -1
+        #
+        # # check if adjacent, punish loops
+        # if self.is_adjacent(self.head):
+        #     reward = -1
+        #
+        # # TODO: snake always goes down??
+        # # check view
+        # if not self.free_view(2,2):
+        #     reward = -2
+
+        # 5. update ui and clock
+        self._update_ui()
+        if self.score > 10:
+            self.clock.tick(int(SPEED / 1))
+        else:
+            self.clock.tick(SPEED)
+        # 6. return game over and score
+        return reward, game_over, self.score
+
+    def cage_check(self):
+
         # check if snake is in itself, PYGAME 0,0 IN TOP LEFT CORNER and Y INCREASE FROM TOP TO BOTTOM!!!!
         up = False
         down = False
         left = False
         right = False
         for point in self.snake[1:]:
-            if point.x > self.head.x : #and point.x - self.head.x < 3*BLOCK_SIZE:
+            if point.x > self.head.x:  # and point.x - self.head.x < 3*BLOCK_SIZE:
                 right = True
 
-            if point.x < self.head.x : # and self.head.x - point.x < 3*BLOCK_SIZE:
+            if point.x < self.head.x:  # and self.head.x - point.x < 3*BLOCK_SIZE:
                 left = True
 
-            if point.y > self.head.y:# and point.y - self.head.y < 3*BLOCK_SIZE:
+            if point.y > self.head.y:  # and point.y - self.head.y < 3*BLOCK_SIZE:
                 down = True
-            if point.y < self.head.y:# and self.head.y - point.y < 3*BLOCK_SIZE:
+            if point.y < self.head.y:  # and self.head.y - point.y < 3*BLOCK_SIZE:
                 up = True
 
-        #
         # print(self.snake[1:])
         # print(self.head.x, self.head.y)
         # print(self.snake[-1].x, self.snake[-1].y)
         # print(up,down,left,right)
-        if up and down and left and right:
-            reward = -5
-
-        # check if adjacent, punish loops
-        if self.is_adjacent(self.head):
-            reward = -2
-
-        # check if path to food is not free
-
-        # 5. update ui and clock
-        self._update_ui()
-        if self.score > 10:
-            self.clock.tick(int(SPEED/1))
-        else:
-            self.clock.tick(SPEED)
-        # 6. return game over and score
-        return reward, game_over, self.score
+        return up and down and left and right
 
     def is_collision(self, pt=None):
         if pt is None:
@@ -142,14 +149,14 @@ class SnakeGameAI:
         # hits itself
         if pt in self.snake[1:]:
             return True
-
         return False
 
+    # see if a point is next to a snake part
     def is_adjacent(self, pt):
-        point_l = Point(pt.x - 20, pt.y)
-        point_r = Point(pt.x + 20, pt.y)
-        point_u = Point(pt.x, pt.y - 20)
-        point_d = Point(pt.x, pt.y + 20)
+        point_l = Point(pt.x - BLOCK_SIZE, pt.y)
+        point_r = Point(pt.x + BLOCK_SIZE, pt.y)
+        point_u = Point(pt.x, pt.y - BLOCK_SIZE)
+        point_d = Point(pt.x, pt.y + BLOCK_SIZE)
 
         # ignore head and first tile since theyre always adjacent
         if point_l in self.snake[2:] or point_r in self.snake[2:] or point_u in self.snake[2:] or point_d in self.snake[
@@ -157,6 +164,47 @@ class SnakeGameAI:
             return True
 
         return False
+
+    # see if anything is infront on the snake in a height x width rectangle FROM SNAKE POV (height parallel, with ortho)
+    def free_view(self, height, width):
+        right = self.direction = Direction.RIGHT
+        left = self.direction = Direction.LEFT
+        up = self.direction = Direction.UP
+        down = self.direction = Direction.DOWN
+
+        side = width // 2
+        head = self.head
+
+        if up:
+            start = Point(head.x - side * BLOCK_SIZE, head.y - BLOCK_SIZE)
+            for h in range(height + 1):
+                for w in range(width + 1):
+                    if self.is_collision(Point(start.x + w * BLOCK_SIZE, start.y - h * BLOCK_SIZE)):
+                        return False
+
+        elif down:
+            start = Point(head.x - side * BLOCK_SIZE, head.y + BLOCK_SIZE)
+            for h in range(height + 1):
+                for w in range(width + 1):
+                    if self.is_collision(Point(start.x + w * BLOCK_SIZE, start.y + h * BLOCK_SIZE)):
+                        return False
+
+        # for right and left width/height are switched
+        elif right:
+            start = Point(head.x + BLOCK_SIZE, head.y - side * BLOCK_SIZE)
+            for h in range(height + 1):
+                for w in range(width + 1):
+                    if self.is_collision(Point(start.x + h * BLOCK_SIZE, start.y + w * BLOCK_SIZE)):
+                        return False
+
+        elif left:
+            start = Point(head.x - BLOCK_SIZE, head.y - side * BLOCK_SIZE)
+            for h in range(height + 1):
+                for w in range(width + 1):
+                    if self.is_collision(Point(start.x - h * BLOCK_SIZE, start.y + w * BLOCK_SIZE)):
+                        return False
+
+        return True
 
     def _update_ui(self):
         self.display.fill(BLACK)
