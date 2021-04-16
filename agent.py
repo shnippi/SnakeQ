@@ -12,6 +12,8 @@ LR = 0.001
 
 # how big one block is in pixels
 BLOCK_SIZE = 20
+# how many games until start displaying
+DISPLAY_GAMES = 100
 
 
 class Agent:
@@ -170,6 +172,9 @@ def train():
     agent = Agent()
     game = SnakeGameAI()
     while True:  # the good old while true
+        if agent.n_games == DISPLAY_GAMES:
+            game.start_display()
+
         # get old state
         state_old = agent.get_state(game)
 
@@ -177,7 +182,10 @@ def train():
         final_move = agent.get_action(state_old)
 
         # perform move and get new state
-        reward, done, score = game.play_step(final_move)
+        if agent.n_games <= DISPLAY_GAMES :
+            reward, done, score = game.play_step(final_move, False)
+        else:
+            reward, done, score = game.play_step(final_move)
         state_new = agent.get_state(game)
 
         # train short memory with the information we just got by playing A in state S and getting reward R and ending

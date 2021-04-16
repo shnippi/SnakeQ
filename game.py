@@ -37,11 +37,13 @@ class SnakeGameAI:
     def __init__(self, w=640, h=480):  # 32 x 24
         self.w = w
         self.h = h
+        self.clock = pygame.time.Clock()
+        self.reset()
+
+    def start_display(self):
         # init display
         self.display = pygame.display.set_mode((self.w, self.h))
         pygame.display.set_caption('Snake')
-        self.clock = pygame.time.Clock()
-        self.reset()
 
     def reset(self):
         # init game state
@@ -65,7 +67,7 @@ class SnakeGameAI:
         if self.food in self.snake:
             self._place_food()
 
-    def play_step(self, action):
+    def play_step(self, action, update=True):
         self.frame_iteration += 1
         # 1. collect user input
         for event in pygame.event.get():
@@ -107,7 +109,8 @@ class SnakeGameAI:
         #     reward = -2
 
         # 5. update ui and clock
-        self._update_ui()
+        if update:
+            self._update_ui()
         if self.score > 10:
             self.clock.tick(int(SPEED / 1))
         else:
