@@ -6,6 +6,10 @@ from game import SnakeGameAI, Direction, Point
 from Model import Linear_QNet, QTrainer
 from helper import plot
 
+# Get cpu or gpu device for training.
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print("Using {} device".format(device))
+
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
 LR = 0.001
@@ -24,7 +28,7 @@ class Agent:
         self.gamma = 0.9  # discount rate
         self.extensions = 3  # how many points (body squares) do i wanna track
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
-        self.model = Linear_QNet(11 + self.extensions, 256, 3)  # 11 value state input, 3 action as output (s,l, r)
+        self.model = Linear_QNet(11 + self.extensions, 256, 3).to(device) # 11 value state input, 3 action as output (s,l, r)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self, game):
@@ -156,7 +160,7 @@ class Agent:
             move = random.randint(0, 2)
             final_move[move] = 1
         else:
-            state0 = torch.tensor(state, dtype=torch.float)
+            state0 = torch.tensor(state, dtype=torch.float).to(device)
             prediction = self.model(state0)
             move = torch.argmax(prediction).item()
             final_move[move] = 1
