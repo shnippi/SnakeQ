@@ -3,7 +3,7 @@ import numpy as np
 from IPython import display
 from game import SnakeGameAI, Direction, Point
 
-plt.ion()
+
 BLOCK_SIZE = 20
 
 
@@ -29,7 +29,7 @@ def two_tile_sight(state, game, head, dir_r, dir_l, dir_u, dir_d):
     point_2u = Point(head.x, head.y - 40)
     point_2d = Point(head.x, head.y + 40)
 
-    return state.extend([  # Danger 2straight
+    state.extend([  # Danger 2straight
         (dir_r and game.is_collision(point_2r)) or
         (dir_l and game.is_collision(point_2l)) or
         (dir_u and game.is_collision(point_2u)) or
@@ -45,7 +45,9 @@ def two_tile_sight(state, game, head, dir_r, dir_l, dir_u, dir_d):
         (dir_d and game.is_collision(point_2r)) or
         (dir_u and game.is_collision(point_2l)) or
         (dir_r and game.is_collision(point_2u)) or
-        (dir_l and game.is_collision(point_2d)), ])
+        (dir_l and game.is_collision(point_2d))])
+
+    return state
 
 
 def track_positions(state, snake, game):
