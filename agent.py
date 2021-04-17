@@ -28,7 +28,8 @@ class Agent:
         self.gamma = 0.9  # discount rate
         self.extensions = 3  # how many points (body squares) do i wanna track
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
-        self.model = Linear_QNet(11 + self.extensions, 256, 3).to(device) # 11 value state input, 3 action as output (s,l, r)
+        self.model = Linear_QNet(11 + self.extensions, 256, 3).to(
+            device)  # 11 value state input, 3 action as output (s,l, r)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self, game):
@@ -123,12 +124,13 @@ class Agent:
         #         continue
         #     state.extend([snake[idx].x < game.head.x, snake[idx].x > game.head.x, snake[idx].y < game.head.y,
         #                   snake[idx].y > game.head.y, ])
+        # print(state)
 
         # # board idea
         # board = np.zeros((24, 32))
         # for point in snake:
         #     board[int((point.y - BLOCK_SIZE) // BLOCK_SIZE)][int((point.x - BLOCK_SIZE) // 20)] = 1
-
+        #
         # print(board)
         # print(np.where(board == 1))
 
@@ -186,7 +188,7 @@ def train():
         final_move = agent.get_action(state_old)
 
         # perform move and get new state
-        if agent.n_games <= DISPLAY_GAMES :
+        if agent.n_games <= DISPLAY_GAMES:
             reward, done, score = game.play_step(final_move, False)
         else:
             reward, done, score = game.play_step(final_move)
