@@ -4,7 +4,7 @@ import numpy as np
 from collections import deque
 from game import SnakeGameAI, Direction, Point
 from Model import Linear_QNet, QTrainer
-from helper import plot
+from helper import *
 
 # Get cpu or gpu device for training.
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -17,7 +17,7 @@ LR = 0.001
 # how big one block is in pixels
 BLOCK_SIZE = 20
 # how many games until start displaying
-DISPLAY_GAMES = 100
+DISPLAY_GAMES = 0
 
 
 class Agent:
@@ -26,7 +26,7 @@ class Agent:
         self.n_games = 0
         self.epsilon = 0  # randomness
         self.gamma = 0.9  # discount rate
-        self.extensions = 3  # how many points (body squares) do i wanna track
+        self.extensions = 16  # how many points (body squares) do i wanna track
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
         self.model = Linear_QNet(11 + self.extensions, 256, 3).to(
             device)  # 11 value state input, 3 action as output (s,l, r)
@@ -64,7 +64,7 @@ class Agent:
         # TODO: idea 5 : -1 reward if head is "inside of snake"  xxxx
         # TODO: idea 6 : give 2 vision squares
         # TODO: idea 7 : give reward when he is in a position where nothing is in the way for 2 tiles (free square in front)
-        # TODO: check if path to food is not free
+        # TODO: check if path to food is not free !!!!
         # TODO: idea 7 : punish when it has to reset (maybe prevent idle animations)
 
         state = [
@@ -118,21 +118,11 @@ class Agent:
 
         ]
 
-        # # track position of #self.extension bodyparts relative to head
-        # for idx in range(-3, 3):
-        #     if idx == 0:
-        #         continue
-        #     state.extend([snake[idx].x < game.head.x, snake[idx].x > game.head.x, snake[idx].y < game.head.y,
-        #                   snake[idx].y > game.head.y, ])
-        # print(state)
+        state = track_positions(state, snake, game) # + 16 extensions
 
-        # # board idea
-        # board = np.zeros((24, 32))
-        # for point in snake:
-        #     board[int((point.y - BLOCK_SIZE) // BLOCK_SIZE)][int((point.x - BLOCK_SIZE) // 20)] = 1
-        #
-        # print(board)
-        # print(np.where(board == 1))
+        # state = two_tile_sight(state, game, head, dir_r, dir_l, dir_u, dir_d)
+
+        # state = board(game, snake) # + 757 extensions
 
         return np.array(state, dtype=int)
         # return np.append(np.array(state, dtype=int), np.array(board.flatten(), dtype=int))
@@ -168,6 +158,8 @@ class Agent:
             final_move[move] = 1
 
         return final_move
+
+    # additional helper methods
 
 
 def train():
