@@ -40,11 +40,6 @@ class SnakeGameAI:
         self.clock = pygame.time.Clock()
         self.reset()
 
-    def start_display(self):
-        # init display
-        self.display = pygame.display.set_mode((self.w, self.h))
-        pygame.display.set_caption('Snake')
-
     def reset(self):
         # init game state
         self.direction = Direction.RIGHT
@@ -59,6 +54,12 @@ class SnakeGameAI:
         self.food = None
         self._place_food()
         self.frame_iteration = 0
+        self.was_in_cage_already = 0  # only give negative reward the first time it enters a cage
+
+    def start_display(self):
+        # init display
+        self.display = pygame.display.set_mode((self.w, self.h))
+        pygame.display.set_caption('Snake')
 
     def _place_food(self):
         x = random.randint(0, (self.w - BLOCK_SIZE) // BLOCK_SIZE) * BLOCK_SIZE
@@ -96,8 +97,9 @@ class SnakeGameAI:
             self.snake.pop()
 
         # # check if in cage
-        # if self.cage_check():
-        #     reward = -1
+        # if self.cage_check() and self.was_in_cage_already < 3:
+        #     reward = -10
+        #     self.was_in_cage_already += 1
         #
         # # check if adjacent, punish loops
         # if self.is_adjacent(self.head):
