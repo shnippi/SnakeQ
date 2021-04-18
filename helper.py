@@ -68,8 +68,4 @@ def board(game, snake):
 
     board[int((game.food.y - BLOCK_SIZE) // BLOCK_SIZE)][int((game.food.x - BLOCK_SIZE) // 20)] = -1
 
-    print(board)
-    print(np.where(board == 1))
-    print(np.where(board == -1))
-
     return board.flatten()

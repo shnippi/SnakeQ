@@ -17,7 +17,7 @@ LR = 0.001
 # how big one block is in pixels
 BLOCK_SIZE = 20
 # how many games until start displaying
-DISPLAY_GAMES = 0
+DISPLAY_GAMES = 100
 
 
 class Agent:
@@ -26,7 +26,7 @@ class Agent:
         self.n_games = 0
         self.epsilon = 0  # randomness
         self.gamma = 0.9  # discount rate
-        self.extensions = 16 + 3  # how many points (body squares) do i wanna track
+        self.extensions = 0  # how many points (body squares) do i wanna track
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
         self.model = Linear_QNet(11 + self.extensions, 256, 3).to(
             device)  # 11 value state input, 3 action as output (s,l, r)
@@ -95,14 +95,12 @@ class Agent:
 
         ]
 
-        state = track_positions(state, snake, game) # + 16 extensions
-
-        state = two_tile_sight(state, game, head, dir_r, dir_l, dir_u, dir_d) # + 3 extensions
+        # state = track_positions(state, snake, game)  # + 16 extensions
+        # state = two_tile_sight(state, game, head, dir_r, dir_l, dir_u, dir_d)  # + 3 extensions
 
         # state = board(game, snake) # + 757 extensions
 
         return np.array(state, dtype=int)
-        # return np.append(np.array(state, dtype=int), np.array(board.flatten(), dtype=int))
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))  # popleft if MAX_MEMORY is reached
@@ -123,6 +121,7 @@ class Agent:
 
     def get_action(self, state):
         # random moves: tradeoff exploration / exploitation, shrinking epsilon
+        # TODO: rework epsilon
         self.epsilon = 80 - self.n_games
         final_move = [0, 0, 0]
         if random.randint(0, 200) < self.epsilon:
