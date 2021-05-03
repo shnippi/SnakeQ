@@ -28,7 +28,7 @@ class Agent:
         self.gamma = 0.9  # discount rate
         self.extensions = 3 + 1 + 16 # how many points (body squares) do i wanna track
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
-        self.model = Linear_QNet(11 + self.extensions, 256, 3).to(
+        self.model = Linear_QNet(11, 256, 3).to(
             device)  # 11 value state input, 3 action as output (s,l, r)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
@@ -96,9 +96,9 @@ class Agent:
 
         # TODO: dynamic extension manager
 
-        state = track_positions(state, snake, game)  # + 16 extensions
-        state = two_tile_sight(state, game, head, dir_r, dir_l, dir_u, dir_d)  # + 3 extensions
-        state = add_free_path_check(state, game)  # + 1
+        # state = track_positions(state, snake, game)  # + 16 extensions
+        # state = two_tile_sight(state, game, head, dir_r, dir_l, dir_u, dir_d)  # + 3 extensions
+        # state = add_free_path_check(state, game)  # + 1
 
         # state = board(game, snake) # + 757 extensions
 
