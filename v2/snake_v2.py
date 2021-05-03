@@ -3,8 +3,7 @@ from agent_v2 import Agent
 from game import SnakeGameAI
 from helper import *
 
-# TODO: CHANGE ACTION REPRESENTATION FROM [0,0,0] TO INTEGER
-
+# here the action representation is integer not array !!!
 
 input_dims = 11  # how many elements does the state representation have?
 n_actions = 3

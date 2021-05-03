@@ -230,9 +230,9 @@ class SnakeGameAI:
         idx = clock_wise.index(self.direction)
 
         #  translating from snake POV in absolute directions seen from the board
-        if np.array_equal(action, [1, 0, 0]):
+        if np.array_equal(action, [1, 0, 0]) or action == 0:
             new_dir = clock_wise[idx]  # straight
-        elif np.array_equal(action, [0, 1, 0]):
+        elif np.array_equal(action, [0, 1, 0]) or action == 1:
             next_idx = (idx + 1) % 4
             new_dir = clock_wise[next_idx]  # right ( move clockwise )
         else:
