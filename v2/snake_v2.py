@@ -8,7 +8,7 @@ from helper import *
 input_dims = 11  # how many elements does the state representation have?
 n_actions = 3
 scores, avg_scores, eps_history = [], [], []
-epochs = 500
+epochs = 50000
 
 env = SnakeGameAI()
 agent = Agent(gamma=0.99, epsilon=1.0, batch_size=4, n_actions=n_actions, eps_end=0.01, input_dims=[input_dims],
@@ -20,10 +20,10 @@ for epoch in range(epochs):
     done = False
     # print(state_old[0].type)
     while not done:  # iterating over every timestep (state)
-        env.start_display()
+        # env.start_display()
         state_old = get_state(env)
         action = agent.choose_action(state_old)
-        reward, done, score = env.play_step(action)
+        reward, done, score = env.play_step(action, update=False)
         state_new = get_state(env)
         score += reward
 
