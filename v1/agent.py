@@ -107,7 +107,7 @@ class Agent:
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))  # popleft if MAX_MEMORY is reached
 
-    # after every episode
+    # after every episode --> Monte carlo
     def train_long_memory(self):
         if len(self.memory) > BATCH_SIZE:
             mini_sample = random.sample(self.memory, BATCH_SIZE)  # list of tuples
@@ -117,7 +117,7 @@ class Agent:
         states, actions, rewards, next_states, dones = zip(*mini_sample)
         self.trainer.train_step(states, actions, rewards, next_states, dones)
 
-    # after every action
+    # after every action --> TD
     def train_short_memory(self, state, action, reward, next_state, done):
         self.trainer.train_step(state, action, reward, next_state, done)
 
@@ -139,7 +139,7 @@ class Agent:
 
     # additional helper methods
 
-
+# TODO: EXTRACT THIS TO ANOTHER FILE
 def train():
     plot_scores = []
     plot_mean_scores = []
