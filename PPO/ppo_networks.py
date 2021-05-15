@@ -6,7 +6,7 @@ from torch.distributions.categorical import Categorical
 
 class ActorNetwork(nn.Module):
     def __init__(self, n_actions, input_dims, alpha,
-                 fc1_dims=256, fc2_dims=256, chkpt_dir='tmp/ppo'):
+                 fc1_dims=256, fc2_dims=256, chkpt_dir='./models'):
         super(ActorNetwork, self).__init__()
 
         self.checkpoint_file = os.path.join(chkpt_dir, 'actor_torch_ppo')
@@ -30,6 +30,8 @@ class ActorNetwork(nn.Module):
         return dist
 
     def save_checkpoint(self):
+        if not os.path.exists('./models'):
+            os.makedirs('./models')
         T.save(self.state_dict(), self.checkpoint_file)
 
     def load_checkpoint(self):
@@ -38,7 +40,7 @@ class ActorNetwork(nn.Module):
 
 class CriticNetwork(nn.Module):
     def __init__(self, input_dims, alpha, fc1_dims=256, fc2_dims=256,
-                 chkpt_dir='tmp/ppo'):
+                 chkpt_dir='./models'):
         super(CriticNetwork, self).__init__()
 
         self.checkpoint_file = os.path.join(chkpt_dir, 'critic_torch_ppo')
@@ -60,6 +62,8 @@ class CriticNetwork(nn.Module):
         return value
 
     def save_checkpoint(self):
+        if not os.path.exists('./models'):
+            os.makedirs('./models')
         T.save(self.state_dict(), self.checkpoint_file)
 
     def load_checkpoint(self):
