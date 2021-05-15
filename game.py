@@ -255,7 +255,6 @@ class SnakeGameAI:
 
         self.head = Point(x, y)
 
-
     def get_state(self):
 
         # TODO: fix state so it doesnt trap itself
@@ -327,18 +326,3 @@ class SnakeGameAI:
         # state = board(game, snake) # + 757 extensions
 
         return np.array(state, dtype=int)
-
-
-if __name__ == '__main__':
-    game = SnakeGameAI()
-
-    # game loop
-    while True:  # el classico
-        game_over, score = game.play_step()
-
-        if game_over == True:
-            break
-
-    print('Final Score', score)
-
-    pygame.quit()

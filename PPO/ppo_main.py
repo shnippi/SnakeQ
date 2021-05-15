@@ -25,6 +25,10 @@ if __name__ == '__main__':
     learn_iters = 0
     avg_score = 0
     n_steps = 0
+    display = True
+
+    if display:
+        env.start_display()
 
     for i in range(n_games):
         env.reset()
@@ -33,7 +37,7 @@ if __name__ == '__main__':
         score = 0
         while not done:
             action, prob, val = agent.choose_action(observation)
-            reward, done, score = env.play_step(action, False)
+            reward, done, score = env.play_step(action, display)
             observation_ = env.get_state()
             n_steps += 1
             score += score
