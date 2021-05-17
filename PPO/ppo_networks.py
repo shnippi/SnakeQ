@@ -3,6 +3,9 @@ import torch as T
 import torch.nn as nn
 import torch.optim as optim
 from torch.distributions.categorical import Categorical
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class ActorNetwork(nn.Module):
     def __init__(self, n_actions, input_dims, alpha,
@@ -20,7 +23,7 @@ class ActorNetwork(nn.Module):
         )
 
         self.optimizer = optim.Adam(self.parameters(), lr=alpha)
-        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
+        self.device = T.device(os.environ.get('DEVICE') if T.cuda.is_available() else "cpu")
         self.to(self.device)
 
     def forward(self, state):
@@ -53,7 +56,7 @@ class CriticNetwork(nn.Module):
         )
 
         self.optimizer = optim.Adam(self.parameters(), lr=alpha)
-        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
+        self.device = T.device(os.environ.get('DEVICE') if T.cuda.is_available() else "cpu")
         self.to(self.device)
 
     def forward(self, state):

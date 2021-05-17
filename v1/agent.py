@@ -1,5 +1,6 @@
 import torch
 import random
+import os
 import numpy as np
 from collections import deque
 from game import SnakeGameAI, Direction, Point
@@ -7,7 +8,7 @@ from Model import Linear_QNet, QTrainer
 from helper import *
 
 # Get cpu or gpu device for training.
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = torch.device(os.environ.get('DEVICE') if torch.cuda.is_available() else "cpu")
 print("Using {} device".format(device))
 
 MAX_MEMORY = 100_000
