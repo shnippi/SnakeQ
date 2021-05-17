@@ -16,7 +16,7 @@ if __name__ == '__main__':
     alpha = 0.0003
     agent = Agent(n_actions=3, batch_size=batch_size,
                   alpha=alpha, n_epochs=n_epochs,
-                  input_dims=(11,))
+                  input_dims=(11 + 757,))
     n_games = 50000
 
     figure_file = 'plots/snake.png'
