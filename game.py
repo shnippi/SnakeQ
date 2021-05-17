@@ -323,6 +323,16 @@ class SnakeGameAI:
         # state = two_tile_sight(state, game, head, dir_r, dir_l, dir_u, dir_d)  # + 3 extensions
         # state = add_free_path_check(state, game)  # + 1
 
-        # state = board(game, snake) # + 757 extensions
+        state = self.board()  # + 757 extensions
 
         return np.array(state, dtype=int)
+
+    def board(self):
+        # board idea
+        board = np.zeros((24, 32))
+        for point in self.snake:
+            board[int((point.y - BLOCK_SIZE) // BLOCK_SIZE)][int((point.x - BLOCK_SIZE) // 20)] = 1
+
+        board[int((self.food.y - BLOCK_SIZE) // BLOCK_SIZE)][int((self.food.x - BLOCK_SIZE) // 20)] = -1
+
+        return board.flatten()

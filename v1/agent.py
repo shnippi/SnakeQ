@@ -100,7 +100,7 @@ class Agent:
         # state = two_tile_sight(state, game, head, dir_r, dir_l, dir_u, dir_d)  # + 3 extensions
         # state = add_free_path_check(state, game)  # + 1
 
-        # state = board(game, snake) # + 757 extensions
+        state = board(game, snake) # + 757 extensions
 
         return np.array(state, dtype=int)
 
