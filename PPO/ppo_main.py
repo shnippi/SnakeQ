@@ -4,7 +4,9 @@ from ppo_agent import Agent
 from plot import plot_learning_curve
 from game import SnakeGameAI
 
-# TODO: tailor this for snake
+# TODO: tweak hyperparams
+# TODO: enlarge state?
+# TODO: compare/look at other algos on github
 
 if __name__ == '__main__':
     env = SnakeGameAI()
@@ -14,8 +16,8 @@ if __name__ == '__main__':
     alpha = 0.0003
     agent = Agent(n_actions=3, batch_size=batch_size,
                   alpha=alpha, n_epochs=n_epochs,
-                  input_dims=(11 + 757,))
-    n_games = 300
+                  input_dims=(11,))
+    n_games = 50000
 
     figure_file = 'plots/snake.png'
 
@@ -40,7 +42,6 @@ if __name__ == '__main__':
             reward, done, score = env.play_step(action, display)
             observation_ = env.get_state()
             n_steps += 1
-            score += score
             agent.remember(observation, action, prob, val, reward, done)
             if n_steps % N == 0:
                 agent.learn()
