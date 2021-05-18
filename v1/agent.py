@@ -1,5 +1,6 @@
 import torch
 import random
+import os
 import numpy as np
 from collections import deque
 from game import SnakeGameAI, Direction, Point
@@ -7,7 +8,7 @@ from Model import Linear_QNet, QTrainer
 from helper import *
 
 # Get cpu or gpu device for training.
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = torch.device(os.environ.get('DEVICE') if torch.cuda.is_available() else "cpu")
 print("Using {} device".format(device))
 
 MAX_MEMORY = 100_000
@@ -100,7 +101,7 @@ class Agent:
         # state = two_tile_sight(state, game, head, dir_r, dir_l, dir_u, dir_d)  # + 3 extensions
         # state = add_free_path_check(state, game)  # + 1
 
-        # state = board(game, snake) # + 757 extensions
+        state = board(game, snake) # + 757 extensions
 
         return np.array(state, dtype=int)
 

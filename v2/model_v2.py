@@ -3,8 +3,11 @@ import os
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from dotenv import load_dotenv
 
-device = "cuda" if T.cuda.is_available() else "cpu"
+load_dotenv()
+
+device = T.device(os.environ.get('DEVICE') if T.cuda.is_available() else "cpu")
 
 
 class DeepQNetwork(nn.Module):
