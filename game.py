@@ -165,7 +165,7 @@ class SnakeGameAI:
 
         self.head = Point(x, y)
 
-    def get_state(self):
+    def get_state(self, limited=None):
 
         # TODO: fix state so it doesnt trap itself
 
@@ -234,7 +234,7 @@ class SnakeGameAI:
         # state = add_free_path_check(state, game)  # + 1
 
         # state = self.board  # + 757 extensions
-        state = self.board_v2(limited=3)
+        state = self.board_v2(limited=limited)
 
         return np.array(state, dtype=int)
 
@@ -339,7 +339,7 @@ class SnakeGameAI:
 
         return board.flatten()
 
-    def board_v2(self, limited=None):
+    def board_v2(self, limited):
         # make the board but with 1's around it
         height = self.h // 20
         width = self.w // 20
@@ -356,9 +356,8 @@ class SnakeGameAI:
             board[int((point.y - BLOCK_SIZE) // BLOCK_SIZE) + 1][int((point.x - BLOCK_SIZE) // 20) + 1] = 1.0
 
         board[int((self.food.y - BLOCK_SIZE) // BLOCK_SIZE) + 1][int((self.food.x - BLOCK_SIZE) // 20) + 1] = -1.0
-        # TODO: maybe return 2dim staterepr?
 
-        # return only a portion of the board
+        # return only a portion of the board --> limited x limited around snake head
         if limited:
             board = board.tolist()
             side_padding = [1. for i in range(limited)]
@@ -373,4 +372,5 @@ class SnakeGameAI:
             board = board[int(self.head.y // 20): int(self.head.y // 20) + 2 * limited + 1,
                     int(self.head.x // 20):int(self.head.x // 20) + 2 * limited + 1]
 
+        # TODO: maybe return 2dim staterepr?
         return np.array(board).flatten()

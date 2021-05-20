@@ -7,14 +7,14 @@ from game import SnakeGameAI
 # TODO: dont forget to copy the game on the server
 
 if __name__ == '__main__':
-    env = SnakeGameAI(10 * 20, 10 * 20)
+    env = SnakeGameAI(32 * 20, 24 * 20)
     N = 20
     batch_size = 5
     n_epochs = 4
     alpha = 0.0003
     agent = Agent(n_actions=3, batch_size=batch_size,
                   alpha=alpha, n_epochs=n_epochs,
-                  input_dims=(49,))
+                  input_dims=(121,))
     n_games = 50000
 
     figure_file = 'plots/snake.png'
@@ -25,6 +25,7 @@ if __name__ == '__main__':
     learn_iters = 0
     avg_score = 0
     n_steps = 0
+    limit = 5
     display = False
 
     if display:
@@ -32,13 +33,13 @@ if __name__ == '__main__':
 
     for i in range(n_games):
         env.reset()
-        observation = env.get_state()
+        observation = env.get_state(limited=limit)
         done = False
         score = 0
         while not done:
             action, prob, val = agent.choose_action(observation)
             reward, done, score = env.play_step(action, display)
-            observation_ = env.get_state()
+            observation_ = env.get_state(limited=limit)
             n_steps += 1
             agent.remember(observation, action, prob, val, reward, done)
             if n_steps % N == 0:
