@@ -16,7 +16,7 @@ if __name__ == '__main__':
     alpha = 0.0003
     agent = Agent(n_actions=3, batch_size=batch_size,
                   alpha=alpha, n_epochs=n_epochs,
-                  input_dims=(11 + 757,))
+                  input_dims=(11,))
     n_games = 50000
 
     figure_file = 'plots/snake.png'
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     learn_iters = 0
     avg_score = 0
     n_steps = 0
-    display = False
+    display = True
 
     if display:
         env.start_display()

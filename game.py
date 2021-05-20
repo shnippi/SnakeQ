@@ -34,7 +34,8 @@ SPEED = 10000
 
 class SnakeGameAI:
 
-    def __init__(self, w=640, h=480):  # 32 x 24
+    # TODO: enlarge the field again
+    def __init__(self, w=320, h=240):  # 32 x 24
         self.w = w
         self.h = h
         self.clock = pygame.time.Clock()
@@ -85,7 +86,7 @@ class SnakeGameAI:
         game_over = False
         if self.is_collision() or self.frame_iteration > 100 * len(self.snake):
             game_over = True
-            reward = -100
+            reward = -50
             return reward, game_over, self.score
 
         # 4. place new food or just move
@@ -323,7 +324,8 @@ class SnakeGameAI:
         # state = two_tile_sight(state, game, head, dir_r, dir_l, dir_u, dir_d)  # + 3 extensions
         # state = add_free_path_check(state, game)  # + 1
 
-        state = self.board()  # + 757 extensions
+        # state = self.board  # + 757 extensions
+        # state = self.board_v2()
 
         return np.array(state, dtype=int)
 
@@ -336,3 +338,27 @@ class SnakeGameAI:
         board[int((self.food.y - BLOCK_SIZE) // BLOCK_SIZE)][int((self.food.x - BLOCK_SIZE) // 20)] = -1
 
         return board.flatten()
+
+    def board_v2(self):
+        # make the board but with 1's around it
+        height = self.h//20
+        width = self.w//20
+        board = np.zeros((height + 2, width + 2))
+
+        for i in range(height + 2):
+            board[i, 0] = 1.0
+            board[i, width + 1] = 1.0
+        for i in range(width + 2):
+            board[0, i] = 1.0
+            board[height + 1, i] = 1.0
+
+        for point in self.snake:
+            board[int((point.y - BLOCK_SIZE) // BLOCK_SIZE) + 1][int((point.x - BLOCK_SIZE) // 20) + 1] = 1.0
+
+        board[int((self.food.y - BLOCK_SIZE) // BLOCK_SIZE) + 1][int((self.food.x - BLOCK_SIZE) // 20) + 1] = -1.0
+        # TODO: maybe return 2dim staterepr?
+        return board.flatten()
+
+
+
+
