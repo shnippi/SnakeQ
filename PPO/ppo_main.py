@@ -27,7 +27,7 @@ if __name__ == '__main__':
     learn_iters = 0
     avg_score = 0
     n_steps = 0
-    display = True
+    display = False
 
     if display:
         env.start_display()
