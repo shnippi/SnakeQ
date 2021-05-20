@@ -4,19 +4,17 @@ from ppo_agent import Agent
 from plot import plot_learning_curve
 from game import SnakeGameAI
 
-# TODO: tweak hyperparams
-# TODO: enlarge state?
-# TODO: compare/look at other algos on github
+# TODO: dont forget to copy the game on the server
 
 if __name__ == '__main__':
-    env = SnakeGameAI()
+    env = SnakeGameAI(10 * 20, 10 * 20)
     N = 20
     batch_size = 5
     n_epochs = 4
     alpha = 0.0003
     agent = Agent(n_actions=3, batch_size=batch_size,
                   alpha=alpha, n_epochs=n_epochs,
-                  input_dims=(11,))
+                  input_dims=(49,))
     n_games = 50000
 
     figure_file = 'plots/snake.png'

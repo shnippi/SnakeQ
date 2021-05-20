@@ -34,7 +34,6 @@ SPEED = 10000
 
 class SnakeGameAI:
 
-    # TODO: enlarge the field again
     def __init__(self, w=320, h=240):  # 32 x 24
         self.w = w
         self.h = h
@@ -87,13 +86,13 @@ class SnakeGameAI:
         game_over = False
         if self.is_collision() or self.frame_iteration > 100 * len(self.snake):
             game_over = True
-            reward = -50
+            reward = -10
             return reward, game_over, self.score
 
         # 4. place new food or just move
         if self.head == self.food:
             self.score += 1
-            reward = 100
+            reward = 10
             self._place_food()
         else:
             self.snake.pop()
@@ -121,97 +120,6 @@ class SnakeGameAI:
             self.clock.tick(SPEED)
         # 6. return game over and score
         return reward, game_over, self.score
-
-    def cage_check(self):
-
-        # check if snake is in itself, PYGAME 0,0 IN TOP LEFT CORNER and Y INCREASE FROM TOP TO BOTTOM!!!!
-        up = False
-        down = False
-        left = False
-        right = False
-        for point in self.snake[1:]:
-            if point.x > self.head.x:  # and point.x - self.head.x < 3*BLOCK_SIZE:
-                right = True
-
-            if point.x < self.head.x:  # and self.head.x - point.x < 3*BLOCK_SIZE:
-                left = True
-
-            if point.y > self.head.y:  # and point.y - self.head.y < 3*BLOCK_SIZE:
-                down = True
-            if point.y < self.head.y:  # and self.head.y - point.y < 3*BLOCK_SIZE:
-                up = True
-
-        # print(self.snake[1:])
-        # print(self.head.x, self.head.y)
-        # print(self.snake[-1].x, self.snake[-1].y)
-        # print(up,down,left,right)
-        return up and down and left and right
-
-    def is_collision(self, pt=None):
-        if pt is None:
-            pt = self.head
-        # hits boundary
-        if pt.x > self.w - BLOCK_SIZE or pt.x < 0 or pt.y > self.h - BLOCK_SIZE or pt.y < 0:
-            return True
-        # hits itself
-        if pt in self.snake[1:]:
-            return True
-        return False
-
-    # see if a point is next to a snake part
-    def is_adjacent(self, pt):
-        point_l = Point(pt.x - BLOCK_SIZE, pt.y)
-        point_r = Point(pt.x + BLOCK_SIZE, pt.y)
-        point_u = Point(pt.x, pt.y - BLOCK_SIZE)
-        point_d = Point(pt.x, pt.y + BLOCK_SIZE)
-
-        # ignore head and first tile since theyre always adjacent
-        if point_l in self.snake[2:] or point_r in self.snake[2:] or point_u in self.snake[2:] or point_d in self.snake[
-                                                                                                             2:]:
-            return True
-
-        return False
-
-    # see if anything is infront on the snake in a height x width rectangle FROM SNAKE POV (height parallel, with ortho)
-    def free_view(self, height, width):
-        right = self.direction = Direction.RIGHT
-        left = self.direction = Direction.LEFT
-        up = self.direction = Direction.UP
-        down = self.direction = Direction.DOWN
-
-        side = width // 2
-        head = self.head
-
-        if up:
-            start = Point(head.x - side * BLOCK_SIZE, head.y - BLOCK_SIZE)
-            for h in range(height + 1):
-                for w in range(width + 1):
-                    if self.is_collision(Point(start.x + w * BLOCK_SIZE, start.y - h * BLOCK_SIZE)):
-                        return False
-
-        elif down:
-            start = Point(head.x - side * BLOCK_SIZE, head.y + BLOCK_SIZE)
-            for h in range(height + 1):
-                for w in range(width + 1):
-                    if self.is_collision(Point(start.x + w * BLOCK_SIZE, start.y + h * BLOCK_SIZE)):
-                        return False
-
-        # for right and left width/height are switched
-        elif right:
-            start = Point(head.x + BLOCK_SIZE, head.y - side * BLOCK_SIZE)
-            for h in range(height + 1):
-                for w in range(width + 1):
-                    if self.is_collision(Point(start.x + h * BLOCK_SIZE, start.y + w * BLOCK_SIZE)):
-                        return False
-
-        elif left:
-            start = Point(head.x - BLOCK_SIZE, head.y - side * BLOCK_SIZE)
-            for h in range(height + 1):
-                for w in range(width + 1):
-                    if self.is_collision(Point(start.x - h * BLOCK_SIZE, start.y + w * BLOCK_SIZE)):
-                        return False
-
-        return True
 
     def _update_ui(self):
         self.display.fill(BLACK)
@@ -326,9 +234,100 @@ class SnakeGameAI:
         # state = add_free_path_check(state, game)  # + 1
 
         # state = self.board  # + 757 extensions
-        # state = self.board_v2()
+        state = self.board_v2(limited=3)
 
         return np.array(state, dtype=int)
+
+    def cage_check(self):
+
+        # check if snake is in itself, PYGAME 0,0 IN TOP LEFT CORNER and Y INCREASE FROM TOP TO BOTTOM!!!!
+        up = False
+        down = False
+        left = False
+        right = False
+        for point in self.snake[1:]:
+            if point.x > self.head.x:  # and point.x - self.head.x < 3*BLOCK_SIZE:
+                right = True
+
+            if point.x < self.head.x:  # and self.head.x - point.x < 3*BLOCK_SIZE:
+                left = True
+
+            if point.y > self.head.y:  # and point.y - self.head.y < 3*BLOCK_SIZE:
+                down = True
+            if point.y < self.head.y:  # and self.head.y - point.y < 3*BLOCK_SIZE:
+                up = True
+
+        # print(self.snake[1:])
+        # print(self.head.x, self.head.y)
+        # print(self.snake[-1].x, self.snake[-1].y)
+        # print(up,down,left,right)
+        return up and down and left and right
+
+    def is_collision(self, pt=None):
+        if pt is None:
+            pt = self.head
+        # hits boundary
+        if pt.x > self.w - BLOCK_SIZE or pt.x < 0 or pt.y > self.h - BLOCK_SIZE or pt.y < 0:
+            return True
+        # hits itself
+        if pt in self.snake[1:]:
+            return True
+        return False
+
+    # see if a point is next to a snake part
+    def is_adjacent(self, pt):
+        point_l = Point(pt.x - BLOCK_SIZE, pt.y)
+        point_r = Point(pt.x + BLOCK_SIZE, pt.y)
+        point_u = Point(pt.x, pt.y - BLOCK_SIZE)
+        point_d = Point(pt.x, pt.y + BLOCK_SIZE)
+
+        # ignore head and first tile since theyre always adjacent
+        if point_l in self.snake[2:] or point_r in self.snake[2:] or point_u in self.snake[2:] or point_d in self.snake[
+                                                                                                             2:]:
+            return True
+
+        return False
+
+    # see if anything is infront on the snake in a height x width rectangle FROM SNAKE POV (height parallel, with ortho)
+    def free_view(self, height, width):
+        right = self.direction = Direction.RIGHT
+        left = self.direction = Direction.LEFT
+        up = self.direction = Direction.UP
+        down = self.direction = Direction.DOWN
+
+        side = width // 2
+        head = self.head
+
+        if up:
+            start = Point(head.x - side * BLOCK_SIZE, head.y - BLOCK_SIZE)
+            for h in range(height + 1):
+                for w in range(width + 1):
+                    if self.is_collision(Point(start.x + w * BLOCK_SIZE, start.y - h * BLOCK_SIZE)):
+                        return False
+
+        elif down:
+            start = Point(head.x - side * BLOCK_SIZE, head.y + BLOCK_SIZE)
+            for h in range(height + 1):
+                for w in range(width + 1):
+                    if self.is_collision(Point(start.x + w * BLOCK_SIZE, start.y + h * BLOCK_SIZE)):
+                        return False
+
+        # for right and left width/height are switched
+        elif right:
+            start = Point(head.x + BLOCK_SIZE, head.y - side * BLOCK_SIZE)
+            for h in range(height + 1):
+                for w in range(width + 1):
+                    if self.is_collision(Point(start.x + h * BLOCK_SIZE, start.y + w * BLOCK_SIZE)):
+                        return False
+
+        elif left:
+            start = Point(head.x - BLOCK_SIZE, head.y - side * BLOCK_SIZE)
+            for h in range(height + 1):
+                for w in range(width + 1):
+                    if self.is_collision(Point(start.x - h * BLOCK_SIZE, start.y + w * BLOCK_SIZE)):
+                        return False
+
+        return True
 
     def board(self):
         # board idea
@@ -340,10 +339,10 @@ class SnakeGameAI:
 
         return board.flatten()
 
-    def board_v2(self):
+    def board_v2(self, limited=None):
         # make the board but with 1's around it
-        height = self.h//20
-        width = self.w//20
+        height = self.h // 20
+        width = self.w // 20
         board = np.zeros((height + 2, width + 2))
 
         for i in range(height + 2):
@@ -358,8 +357,20 @@ class SnakeGameAI:
 
         board[int((self.food.y - BLOCK_SIZE) // BLOCK_SIZE) + 1][int((self.food.x - BLOCK_SIZE) // 20) + 1] = -1.0
         # TODO: maybe return 2dim staterepr?
-        return board.flatten()
 
+        # return only a portion of the board
+        if limited:
+            board = board.tolist()
+            side_padding = [1. for i in range(limited)]
+            up_padding = [[1. for i in range(width + 2 * limited + 2)] for x in range(limited)]
 
+            for i in range(len(board)):
+                board[i] = np.concatenate((side_padding, board[i], side_padding), axis=0)
 
+            board = np.array(board)
+            board = np.concatenate((up_padding, board, up_padding))
 
+            board = board[int(self.head.y // 20): int(self.head.y // 20) + 2 * limited + 1,
+                    int(self.head.x // 20):int(self.head.x // 20) + 2 * limited + 1]
+
+        return np.array(board).flatten()
