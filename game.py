@@ -34,7 +34,7 @@ SPEED = 10000
 
 class SnakeGameAI:
 
-    def __init__(self, w=640, h=480):  # 32 x 24
+    def __init__(self, w=320, h=240):  # 32 x 24
         self.w = w
         self.h = h
         self.clock = pygame.time.Clock()
@@ -71,10 +71,11 @@ class SnakeGameAI:
     def play_step(self, action, update=True):
         self.frame_iteration += 1
         # 1. collect user input
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
+        if update:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
 
         # 2. move
         self._move(action)  # update the head
@@ -85,13 +86,13 @@ class SnakeGameAI:
         game_over = False
         if self.is_collision() or self.frame_iteration > 100 * len(self.snake):
             game_over = True
-            reward = -100
+            reward = -10
             return reward, game_over, self.score
 
         # 4. place new food or just move
         if self.head == self.food:
             self.score += 1
-            reward = 100
+            reward = 10
             self._place_food()
         else:
             self.snake.pop()
@@ -119,6 +120,123 @@ class SnakeGameAI:
             self.clock.tick(SPEED)
         # 6. return game over and score
         return reward, game_over, self.score
+
+    def _update_ui(self):
+        self.display.fill(BLACK)
+
+        for pt in self.snake:
+            pygame.draw.rect(self.display, PINK1, pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE))
+            pygame.draw.rect(self.display, PINK2, pygame.Rect(pt.x + 4, pt.y + 4, 12, 12))
+
+        pygame.draw.rect(self.display, GREEN, pygame.Rect(self.food.x, self.food.y, BLOCK_SIZE, BLOCK_SIZE))
+
+        text = font.render("Score: " + str(self.score), True, WHITE)
+        self.display.blit(text, [0, 0])
+        pygame.display.flip()
+
+    def _move(self, action):
+        # [straight,right,left] seen from the snake POV
+        clock_wise = [Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP]
+        idx = clock_wise.index(self.direction)
+
+        #  translating from snake POV in absolute directions seen from the board
+        if np.array_equal(action, [1, 0, 0]) or action == 0:
+            new_dir = clock_wise[idx]  # straight
+        elif np.array_equal(action, [0, 1, 0]) or action == 1:
+            next_idx = (idx + 1) % 4
+            new_dir = clock_wise[next_idx]  # right ( move clockwise )
+        else:
+            next_idx = (idx - 1) % 4
+            new_dir = clock_wise[next_idx]  # left (move counterclockwise)
+
+        self.direction = new_dir
+
+        # update head
+        x = self.head.x
+        y = self.head.y
+        if self.direction == Direction.RIGHT:
+            x += BLOCK_SIZE
+        elif self.direction == Direction.LEFT:
+            x -= BLOCK_SIZE
+        elif self.direction == Direction.DOWN:
+            y += BLOCK_SIZE
+        elif self.direction == Direction.UP:
+            y -= BLOCK_SIZE
+
+        self.head = Point(x, y)
+
+    def get_state(self, limited=None):
+
+        # TODO: fix state so it doesnt trap itself
+
+        head = self.snake[0]
+        tail = self.snake[-1]
+        snake = self.snake
+        point_l = Point(head.x - 20, head.y)
+        point_r = Point(head.x + 20, head.y)
+        point_u = Point(head.x, head.y - 20)
+        point_d = Point(head.x, head.y + 20)
+
+        dir_l = self.direction == Direction.LEFT
+        dir_r = self.direction == Direction.RIGHT
+        dir_u = self.direction == Direction.UP
+        dir_d = self.direction == Direction.DOWN
+
+        # 11 value state : [danger straight, danger right, danger left, direction left, direction right,
+        # direction up, direction down, food left, food right, food up, food down] --> 0/1 for T/F
+        # TODO: idea 1 : track tail
+        # TODO: idea 2 : track average location of body
+        # TODO: idea 3 : penalty for time? penalty for loop?
+        # TODO: idea 4 : give whole board as input  xxxx
+        # TODO: idea 5 : -1 reward if head is "inside of snake"  xxxx
+        # TODO: idea 6 : give 2 vision squares
+        # TODO: idea 7 : give reward when he is in a position where nothing is in the way for 2 tiles (free square in front)
+        # TODO: check if path to food is not free !!!!
+        # TODO: idea 7 : punish when it has to reset (maybe prevent idle animations)
+
+        state = [
+            # Danger straight
+            (dir_r and self.is_collision(point_r)) or
+            (dir_l and self.is_collision(point_l)) or
+            (dir_u and self.is_collision(point_u)) or
+            (dir_d and self.is_collision(point_d)),
+
+            # Danger right
+            (dir_u and self.is_collision(point_r)) or
+            (dir_d and self.is_collision(point_l)) or
+            (dir_l and self.is_collision(point_u)) or
+            (dir_r and self.is_collision(point_d)),
+
+            # Danger left
+            (dir_d and self.is_collision(point_r)) or
+            (dir_u and self.is_collision(point_l)) or
+            (dir_r and self.is_collision(point_u)) or
+            (dir_l and self.is_collision(point_d)),
+
+            # Move direction
+            dir_l,
+            dir_r,
+            dir_u,
+            dir_d,
+
+            # Food location
+            self.food.x < self.head.x,  # food left
+            self.food.x > self.head.x,  # food right
+            self.food.y < self.head.y,  # food up
+            self.food.y > self.head.y,  # food down
+
+        ]
+
+        # TODO: dynamic extension manager
+
+        # state = track_positions(state, snake, game)  # + 16 extensions
+        # state = two_tile_sight(state, game, head, dir_r, dir_l, dir_u, dir_d)  # + 3 extensions
+        # state = add_free_path_check(state, game)  # + 1
+
+        # state = self.board  # + 757 extensions
+        state = self.board_v2(limited=limited)
+
+        return np.array(state, dtype=int)
 
     def cage_check(self):
 
@@ -211,122 +329,6 @@ class SnakeGameAI:
 
         return True
 
-    def _update_ui(self):
-        self.display.fill(BLACK)
-
-        for pt in self.snake:
-            pygame.draw.rect(self.display, PINK1, pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE))
-            pygame.draw.rect(self.display, PINK2, pygame.Rect(pt.x + 4, pt.y + 4, 12, 12))
-
-        pygame.draw.rect(self.display, GREEN, pygame.Rect(self.food.x, self.food.y, BLOCK_SIZE, BLOCK_SIZE))
-
-        text = font.render("Score: " + str(self.score), True, WHITE)
-        self.display.blit(text, [0, 0])
-        pygame.display.flip()
-
-    def _move(self, action):
-        # [straight,right,left] seen from the snake POV
-        clock_wise = [Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP]
-        idx = clock_wise.index(self.direction)
-
-        #  translating from snake POV in absolute directions seen from the board
-        if np.array_equal(action, [1, 0, 0]) or action == 0:
-            new_dir = clock_wise[idx]  # straight
-        elif np.array_equal(action, [0, 1, 0]) or action == 1:
-            next_idx = (idx + 1) % 4
-            new_dir = clock_wise[next_idx]  # right ( move clockwise )
-        else:
-            next_idx = (idx - 1) % 4
-            new_dir = clock_wise[next_idx]  # left (move counterclockwise)
-
-        self.direction = new_dir
-
-        # update head
-        x = self.head.x
-        y = self.head.y
-        if self.direction == Direction.RIGHT:
-            x += BLOCK_SIZE
-        elif self.direction == Direction.LEFT:
-            x -= BLOCK_SIZE
-        elif self.direction == Direction.DOWN:
-            y += BLOCK_SIZE
-        elif self.direction == Direction.UP:
-            y -= BLOCK_SIZE
-
-        self.head = Point(x, y)
-
-    def get_state(self):
-
-        # TODO: fix state so it doesnt trap itself
-
-        head = self.snake[0]
-        tail = self.snake[-1]
-        snake = self.snake
-        point_l = Point(head.x - 20, head.y)
-        point_r = Point(head.x + 20, head.y)
-        point_u = Point(head.x, head.y - 20)
-        point_d = Point(head.x, head.y + 20)
-
-        dir_l = self.direction == Direction.LEFT
-        dir_r = self.direction == Direction.RIGHT
-        dir_u = self.direction == Direction.UP
-        dir_d = self.direction == Direction.DOWN
-
-        # 11 value state : [danger straight, danger right, danger left, direction left, direction right,
-        # direction up, direction down, food left, food right, food up, food down] --> 0/1 for T/F
-        # TODO: idea 1 : track tail
-        # TODO: idea 2 : track average location of body
-        # TODO: idea 3 : penalty for time? penalty for loop?
-        # TODO: idea 4 : give whole board as input  xxxx
-        # TODO: idea 5 : -1 reward if head is "inside of snake"  xxxx
-        # TODO: idea 6 : give 2 vision squares
-        # TODO: idea 7 : give reward when he is in a position where nothing is in the way for 2 tiles (free square in front)
-        # TODO: check if path to food is not free !!!!
-        # TODO: idea 7 : punish when it has to reset (maybe prevent idle animations)
-
-        state = [
-            # Danger straight
-            (dir_r and self.is_collision(point_r)) or
-            (dir_l and self.is_collision(point_l)) or
-            (dir_u and self.is_collision(point_u)) or
-            (dir_d and self.is_collision(point_d)),
-
-            # Danger right
-            (dir_u and self.is_collision(point_r)) or
-            (dir_d and self.is_collision(point_l)) or
-            (dir_l and self.is_collision(point_u)) or
-            (dir_r and self.is_collision(point_d)),
-
-            # Danger left
-            (dir_d and self.is_collision(point_r)) or
-            (dir_u and self.is_collision(point_l)) or
-            (dir_r and self.is_collision(point_u)) or
-            (dir_l and self.is_collision(point_d)),
-
-            # Move direction
-            dir_l,
-            dir_r,
-            dir_u,
-            dir_d,
-
-            # Food location
-            self.food.x < self.head.x,  # food left
-            self.food.x > self.head.x,  # food right
-            self.food.y < self.head.y,  # food up
-            self.food.y > self.head.y,  # food down
-
-        ]
-
-        # TODO: dynamic extension manager
-
-        # state = track_positions(state, snake, game)  # + 16 extensions
-        # state = two_tile_sight(state, game, head, dir_r, dir_l, dir_u, dir_d)  # + 3 extensions
-        # state = add_free_path_check(state, game)  # + 1
-
-        state = self.board()  # + 757 extensions
-
-        return np.array(state, dtype=int)
-
     def board(self):
         # board idea
         board = np.zeros((24, 32))
@@ -336,3 +338,39 @@ class SnakeGameAI:
         board[int((self.food.y - BLOCK_SIZE) // BLOCK_SIZE)][int((self.food.x - BLOCK_SIZE) // 20)] = -1
 
         return board.flatten()
+
+    def board_v2(self, limited):
+        # make the board but with 1's around it
+        height = self.h // 20
+        width = self.w // 20
+        board = np.zeros((height + 2, width + 2))
+
+        for i in range(height + 2):
+            board[i, 0] = 1.0
+            board[i, width + 1] = 1.0
+        for i in range(width + 2):
+            board[0, i] = 1.0
+            board[height + 1, i] = 1.0
+
+        for point in self.snake:
+            board[int((point.y - BLOCK_SIZE) // BLOCK_SIZE) + 1][int((point.x - BLOCK_SIZE) // 20) + 1] = 1.0
+
+        board[int((self.food.y - BLOCK_SIZE) // BLOCK_SIZE) + 1][int((self.food.x - BLOCK_SIZE) // 20) + 1] = -1.0
+
+        # return only a portion of the board --> limited x limited around snake head
+        if limited:
+            board = board.tolist()
+            side_padding = [1. for i in range(limited)]
+            up_padding = [[1. for i in range(width + 2 * limited + 2)] for x in range(limited)]
+
+            for i in range(len(board)):
+                board[i] = np.concatenate((side_padding, board[i], side_padding), axis=0)
+
+            board = np.array(board)
+            board = np.concatenate((up_padding, board, up_padding))
+
+            board = board[int(self.head.y // 20): int(self.head.y // 20) + 2 * limited + 1,
+                    int(self.head.x // 20):int(self.head.x // 20) + 2 * limited + 1]
+
+        # TODO: maybe return 2dim staterepr?
+        return np.array(board).flatten()
