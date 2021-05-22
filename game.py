@@ -31,10 +31,9 @@ BLOCK_SIZE = 20
 # speeeed go brr
 SPEED = 10000
 
-
 class SnakeGameAI:
 
-    def __init__(self, w=320, h=240):  # 32 x 24
+    def __init__(self, w=640, h=480):  # 32 x 24
         self.w = w
         self.h = h
         self.clock = pygame.time.Clock()
@@ -92,7 +91,7 @@ class SnakeGameAI:
         # 4. place new food or just move
         if self.head == self.food:
             self.score += 1
-            reward = 10
+            reward = 20
             self._place_food()
         else:
             self.snake.pop()
@@ -234,7 +233,7 @@ class SnakeGameAI:
         # state = add_free_path_check(state, game)  # + 1
 
         # state = self.board  # + 757 extensions
-        state = self.board_v2(limited=limited)
+        # state = self.board_v2(limited=limited)
 
         return np.array(state, dtype=int)
 
