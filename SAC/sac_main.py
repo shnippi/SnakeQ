@@ -6,6 +6,8 @@ import numpy as np
 # TODO:
 
 if __name__ == '__main__':
+    print(" did you copy the game on the server?")
+
     env_id = 'LunarLanderContinuous-v2'
     # env_id = 'BipedalWalker-v2'
     # env_id = 'AntBulletEnv-v0'

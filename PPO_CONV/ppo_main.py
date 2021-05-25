@@ -7,6 +7,7 @@ from game import SnakeGameAI
 # TODO: ON THE SERVER COPY THE GAME IN THE PPO FOLDER
 
 if __name__ == '__main__':
+    print(" did you copy the game on the server?")
     env = SnakeGameAI()
     N = 20
     batch_size = 5
