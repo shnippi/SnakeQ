@@ -31,10 +31,9 @@ BLOCK_SIZE = 20
 # speeeed go brr
 SPEED = 10000
 
-
 class SnakeGameAI:
 
-    def __init__(self, w=320, h=240):  # 32 x 24
+    def __init__(self, w=640, h=480):  # 32 x 24
         self.w = w
         self.h = h
         self.clock = pygame.time.Clock()
@@ -86,13 +85,13 @@ class SnakeGameAI:
         game_over = False
         if self.is_collision() or self.frame_iteration > 100 * len(self.snake):
             game_over = True
-            reward -= 100
+            reward = -10
             return reward, game_over, self.score
 
         # 4. place new food or just move
         if self.head == self.food:
             self.score += 1
-            reward += 100
+            reward = 20
             self._place_food()
         else:
             self.snake.pop()
@@ -119,7 +118,6 @@ class SnakeGameAI:
         else:
             self.clock.tick(SPEED)
         # 6. return game over and score
-        reward -=1
         return reward, game_over, self.score
 
     def _update_ui(self):
@@ -235,7 +233,7 @@ class SnakeGameAI:
         # state = add_free_path_check(state, game)  # + 1
 
         # state = self.board  # + 757 extensions
-        state = self.board_v2(limited=limited)
+        # state = self.board_v2(limited=limited)
 
         return np.array(state, dtype=int)
 

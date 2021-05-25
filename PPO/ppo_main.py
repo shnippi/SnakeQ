@@ -4,28 +4,29 @@ from ppo_agent import Agent
 from plot import plot_learning_curve
 from game import SnakeGameAI
 
-# TODO: dont forget to copy the game on the server
+# TODO: ON THE SERVER COPY THE GAME IN THE PPO FOLDER
 
 if __name__ == '__main__':
-    env = SnakeGameAI(32 * 20, 24 * 20)
+    env = SnakeGameAI()
     N = 20
     batch_size = 5
     n_epochs = 4
     alpha = 0.0003
     agent = Agent(n_actions=3, batch_size=batch_size,
                   alpha=alpha, n_epochs=n_epochs,
-                  input_dims=(121,))
-    n_games = 50000
+                  input_dims=(11,))
+    n_games = 5000
 
     figure_file = 'plots/snake.png'
 
     best_score = 0
+    highscore = 0
     score_history = []
 
     learn_iters = 0
     avg_score = 0
     n_steps = 0
-    limit = 5
+    limit = 3
     display = False
 
     if display:
@@ -36,11 +37,13 @@ if __name__ == '__main__':
         observation = env.get_state(limited=limit)
         done = False
         score = 0
+        tot_reward = 0
         while not done:
             action, prob, val = agent.choose_action(observation)
             reward, done, score = env.play_step(action, display)
             observation_ = env.get_state(limited=limit)
             n_steps += 1
+            tot_reward += reward
             agent.remember(observation, action, prob, val, reward, done)
             if n_steps % N == 0:
                 agent.learn()
@@ -48,12 +51,15 @@ if __name__ == '__main__':
             observation = observation_
         score_history.append(score)
         avg_score = np.mean(score_history[-100:])
+        if score > highscore:
+            highscore = score
 
-        if avg_score > best_score:
-            best_score = avg_score
-            agent.save_models()
+        if i % 100 == 0:
+            if avg_score > best_score:
+                best_score = avg_score
+                agent.save_models()
 
-        print('episode', i, 'score %.1f' % score, 'avg score %.1f' % avg_score,
-              'time_steps', n_steps, 'learning_steps', learn_iters)
+        print('episode', i, 'score %.1f' % score, 'avg score %.1f' % avg_score, 'highscore' , highscore,
+              'time_steps', n_steps , 'learning_steps', learn_iters)
     x = [i + 1 for i in range(len(score_history))]
     plot_learning_curve(x, score_history, figure_file)
