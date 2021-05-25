@@ -26,7 +26,7 @@ if __name__ == '__main__':
     avg_score = 0
     n_steps = 0
     limit = 5
-    display = False
+    display = True
 
     if display:
         env.start_display()
