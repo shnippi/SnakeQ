@@ -34,6 +34,7 @@ class ActorNetwork(nn.Module):
 
     def forward(self, state):
         x = self.prelu_act(self.pool(self.conv1(state))) # torch.Size([1, 3, 3, 3])
+        # TODO: make this dynamic
         x = x.view(-1, 27)
         dist = self.actor(x)
         dist = Categorical(dist)
@@ -74,6 +75,7 @@ class CriticNetwork(nn.Module):
 
     def forward(self, state):
         x = self.prelu_act(self.pool(self.conv1(state)))
+        # TODO: make this dynamic
         x = x.view(-1, 27)
         value = self.critic(x)
 
