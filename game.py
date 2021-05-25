@@ -233,7 +233,7 @@ class SnakeGameAI:
         # state = add_free_path_check(state, game)  # + 1
 
         # state = self.board  # + 757 extensions
-        # state = self.board_v2(limited=limited)
+        state = self.board_v2(limited=limited)
 
         return np.array(state, dtype=int)
 
@@ -372,4 +372,4 @@ class SnakeGameAI:
                     int(self.head.x // 20):int(self.head.x // 20) + 2 * limited + 1]
 
         # TODO: maybe return 2dim staterepr?
-        return np.array(board).flatten()
+        return np.array(board)
